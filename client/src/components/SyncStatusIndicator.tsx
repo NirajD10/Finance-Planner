@@ -16,7 +16,7 @@ export function SyncStatusIndicator() {
   if (!label) return null;
 
   return (
-    <p role="status" title={lastError ?? undefined}>
+    <p className="sync-status" role="status" title={lastError ?? undefined}>
       {label}
     </p>
   );

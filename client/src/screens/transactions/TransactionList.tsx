@@ -8,6 +8,7 @@ import {
   type Transaction,
 } from '../../lib/transactions';
 import { formatPaise } from '../../lib/money';
+import { monthLabel } from '../../lib/month';
 
 const PAGE_SIZE = 40;
 const UNDO_WINDOW_MS = 5000;
@@ -21,14 +22,6 @@ interface TransactionListProps {
   onEdit: (transaction: Transaction) => void;
   /** Parent refetches from the local store after any mutation here. */
   onMutated: () => void;
-}
-
-function monthLabel(yearMonth: string): string {
-  const [year, month] = yearMonth.split('-').map(Number);
-  return new Date(year, month - 1, 1).toLocaleDateString('en-IN', {
-    month: 'long',
-    year: 'numeric',
-  });
 }
 
 export function TransactionList({

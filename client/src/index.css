@@ -1,27 +1,53 @@
+/*
+  Design system: "The Ledger" — the app's whole job is a household budget
+  register, so it is built like one: hairline-ruled rows instead of shadowed
+  cards, labels left / figures right like a real account line, and every
+  number set in a fixed-width face so columns of rupees actually line up.
+  See docs/PLAN.md phase 4 for the design brief this token set answers.
+*/
+
 :root {
   color-scheme: light dark;
-  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
 
-  --bg: #ffffff;
-  --fg: #1a1a1a;
-  --muted: #6b7280;
-  --border: #e2e2e2;
-  --surface: #f7f7f8;
-  --accent: #2563eb;
-  --danger: #dc2626;
-  --success: #16a34a;
+  --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Ledger paper, light mode */
+  --bg: #eef1e7;
+  --surface: #e3e9d9;
+  --fg: #1e231c;
+  --muted: #5b6653;
+  --border: #c7d0bb;
+  --border-strong: #a4b092;
+
+  /* One brand accent — never doubles as a status colour */
+  --accent: #2c4770;
+  --accent-ink: #f3f6fa;
+
+  /* The three colours that carry real meaning (budget thresholds, debit/credit) */
+  --good: #3f7d4c;
+  --warn: #a8720f;
+  --over: #a83f3f;
+  --danger: var(--over);
+  --success: var(--good);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121212;
-    --fg: #f1f1f1;
-    --muted: #9aa0a6;
-    --border: #2e2e2e;
-    --surface: #1c1c1e;
-    --accent: #60a5fa;
-    --danger: #f87171;
-    --success: #4ade80;
+    /* Ledger paper, dark mode — a night register, not a generic near-black */
+    --bg: #12160e;
+    --surface: #1a2015;
+    --fg: #e6ead9;
+    --muted: #93a184;
+    --border: #2b3323;
+    --border-strong: #3c4631;
+
+    --accent: #85a6dd;
+    --accent-ink: #0f1520;
+
+    --good: #6fbf7c;
+    --warn: #dda54c;
+    --over: #e2827a;
   }
 }
 
@@ -29,21 +55,62 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: 16px;
+}
+
 body {
   margin: 0;
   min-height: 100svh;
   background: var(--bg);
   color: var(--fg);
+  font: 16px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
 }
 
 main {
   max-width: 640px;
   margin: 0 auto;
-  padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: 20px 16px calc(32px + env(safe-area-inset-bottom, 0px));
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
 }
 
 h1 {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.125rem;
+}
+
+h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+p {
+  margin: 0 0 0.5em;
+}
+
+/* Every figure — money, percentages, counts, dates in data rows — uses the
+   numeral face and lines up in tabular columns, per the ledger convention. */
+.num,
+.transaction-amount,
+.quick-add-amount,
+input[type='number'],
+input[type='date'] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 button {
@@ -51,15 +118,29 @@ button {
   cursor: pointer;
 }
 
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 input,
 select,
 textarea,
 button {
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--fg);
   padding: 8px 10px;
+  font-family: var(--font-body);
+}
+
+button {
+  border-color: var(--border-strong);
 }
 
 label {
@@ -75,7 +156,14 @@ label {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sync-status {
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 
 .diagnostics {
@@ -84,10 +172,38 @@ label {
   color: var(--muted);
 }
 
+/* Top-level navigation */
+
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 12px 0 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-tab {
+  border: none;
+  border-radius: 0;
+  background: none;
+  padding: 8px 4px;
+  margin-right: 20px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.nav-tab.active {
+  color: var(--fg);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
 /* Quick-add */
 
 .quick-add-section {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .quick-add-row {
@@ -101,7 +217,7 @@ label {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   padding: 10px 14px;
   background: var(--surface);
   min-width: 72px;
@@ -109,6 +225,7 @@ label {
 }
 
 .quick-add-label {
+  font-family: var(--font-body);
   font-weight: 600;
 }
 
@@ -127,10 +244,10 @@ label {
 .add-transaction-button {
   display: block;
   width: 100%;
-  margin: 4px 0 16px;
+  margin: 4px 0 20px;
   padding: 10px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-ink);
   border-color: var(--accent);
   font-weight: 600;
 }
@@ -140,7 +257,7 @@ label {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(20, 24, 16, 0.5);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -155,8 +272,9 @@ label {
 
 .modal {
   background: var(--bg);
-  border-radius: 12px 12px 0 0;
-  padding: 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px 8px 0 0;
+  padding: 18px;
   width: 100%;
   max-width: 480px;
   max-height: 85svh;
@@ -168,7 +286,7 @@ label {
 
 @media (min-width: 480px) {
   .modal {
-    border-radius: 12px;
+    border-radius: 8px;
   }
 }
 
@@ -220,7 +338,7 @@ label {
 
 .direction-toggle button.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-ink);
   border-color: var(--accent);
 }
 
@@ -238,7 +356,7 @@ label {
 }
 
 .form-error {
-  color: var(--danger);
+  color: var(--over);
   font-size: 0.85rem;
 }
 
@@ -258,6 +376,7 @@ label {
 
 .transaction-list-filters input[type='search'] {
   flex: 1;
+  font-family: var(--font-body);
 }
 
 .empty-state {
@@ -270,16 +389,17 @@ label {
   position: sticky;
   top: 0;
   background: var(--bg);
-  padding: 6px 0;
+  padding: 10px 0 4px;
   margin: 8px 0 0;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
   color: var(--muted);
+  border-bottom: 1px solid var(--border);
 }
 
 .transaction-row-wrapper {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
 }
 
 .swipe-delete-hint {
@@ -289,8 +409,8 @@ label {
   align-items: center;
   justify-content: flex-end;
   padding-right: 16px;
-  background: var(--danger);
-  color: #fff;
+  background: var(--over);
+  color: var(--accent-ink);
   font-weight: 600;
 }
 
@@ -299,7 +419,7 @@ label {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px;
+  padding: 10px 0;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   transition: transform 0.15s ease;
@@ -317,7 +437,7 @@ label {
 }
 
 .transaction-description {
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -325,6 +445,7 @@ label {
 }
 
 .transaction-date {
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--muted);
 }
@@ -332,27 +453,27 @@ label {
 .recategorise-select {
   max-width: 40%;
   font-size: 0.8rem;
+  font-family: var(--font-body);
 }
 
 .transaction-amount {
-  font-variant-numeric: tabular-nums;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .transaction-amount.debit {
-  color: var(--danger);
+  color: var(--over);
 }
 
 .transaction-amount.credit {
-  color: var(--success);
+  color: var(--good);
 }
 
 .uncategorised-badge {
   font-size: 0.7rem;
   color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
   padding: 1px 6px;
 }
 
@@ -371,7 +492,7 @@ label {
   background: var(--fg);
   color: var(--bg);
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 4px;
   z-index: 20;
 }
 
@@ -381,4 +502,235 @@ label {
   color: var(--accent);
   font-weight: 600;
   padding: 0;
+}
+
+/* Dashboard */
+
+.month-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.month-switcher-label {
+  font-size: 1.05rem;
+  font-weight: 600;
+  min-width: 11ch;
+  text-align: center;
+}
+
+.month-switcher button {
+  background: none;
+  border: 1px solid var(--border-strong);
+  padding: 4px 12px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.dashboard-hero {
+  padding: 4px 0 20px;
+  margin-bottom: 20px;
+  border-bottom: 4px double var(--border-strong);
+}
+
+.dashboard-hero-days {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+
+.dashboard-hero-label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.dashboard-hero-amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1.1;
+  display: block;
+}
+
+.dashboard-hero-amount.over {
+  color: var(--over);
+}
+
+.uncategorised-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--warn);
+}
+
+.category-ledger {
+  display: flex;
+  flex-direction: column;
+}
+
+.category-row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.category-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.category-name {
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-figures {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.category-figures strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.ledger-bar {
+  height: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.ledger-bar-fill {
+  height: 100%;
+  background: var(--good);
+  transition: width 0.5s ease;
+}
+
+.ledger-bar-fill.warn {
+  background: var(--warn);
+}
+
+.ledger-bar-fill.over {
+  background: var(--over);
+}
+
+.category-row-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.category-row-bottom .stat strong {
+  font-family: var(--font-mono);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.dashboard-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--muted);
+}
+
+.dashboard-empty h2 {
+  color: var(--fg);
+  margin-bottom: 8px;
+}
+
+.dashboard-empty-cta {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.dashboard-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* Monthly plan editor */
+
+.plan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.plan-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.plan-section-title {
+  font-size: 0.8rem;
+  text-transform: none;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.plan-line-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.plan-line-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plan-line-row input[type='number'] {
+  width: 110px;
+  text-align: right;
+}
+
+.plan-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Editor / OS */
+
+.diagnostics summary {
+  cursor: pointer;
 }
