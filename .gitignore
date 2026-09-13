@@ -111,3 +111,66 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.swp
+
+# Environment files (all workspaces) — keep non-secret templates/mode files
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.production
+!.env.android
+
+# Bun
+bun.lockb
+
+# Build output (all workspaces)
+dist/
+dist-ssr/
+build/
+
+# Vite
+.vite/
+
+# Capacitor / Android (client/android)
+android/app/build/
+android/app/release/
+android/build/
+android/captures/
+android/.gradle/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/*.iml
+*.apk
+*.aab
+*.ap_
+*.dex
+*.jks
+*.keystore
+!android/gradle/wrapper/gradle-wrapper.jar
+
+# iOS (Capacitor, if added later)
+ios/App/Pods/
+ios/App/build/
+ios/App/DerivedData/
+*.xcworkspace
+*.xcuserstate
+
+# Drizzle / DB
+*.db
+*.sqlite3
+
+# Docker
+*.pid
+
+# Misc large/generated
+*.zip
+*.tar.gz

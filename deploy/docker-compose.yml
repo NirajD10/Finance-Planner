@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: finance
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: finance_planner
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Loopback-only, non-default host port (5432 is often already taken by
+      # another local Postgres): lets host tooling (drizzle-kit migrate/seed)
+      # reach the DB directly. Never bound to 0.0.0.0 — the VM's firewall only
+      # allows 22/80/443 in anyway, but this avoids depending on that alone.
+      - "127.0.0.1:55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finance -d finance_planner"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks: [internal]
+
+  api:
+    build:
+      context: ../server
+    environment:
+      DATABASE_URL: postgres://finance:${POSTGRES_PASSWORD}@postgres:5432/finance_planner
+      WEB_ORIGIN: ${WEB_ORIGIN}
+      JWT_SECRET: ${JWT_SECRET}
+      AUTH_PASSWORD_HASH: ${AUTH_PASSWORD_HASH}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [internal]
+    # No host port published: all local testing goes through Caddy, mirroring
+    # the closed-port posture of the real VM. Uncomment below for direct debugging.
+    # ports: ["3000:3000"]
+
+  caddy:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.client
+    ports:
+      - "8080:80" # real VM: "80:80" + "443:443" once SITE_ADDRESS is a real domain
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS}
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks: [internal]
+
+networks:
+  internal:
+
+volumes:
+  pgdata:

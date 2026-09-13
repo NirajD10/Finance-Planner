@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Dev-only: permits plaintext HTTP to the Android emulator's host loopback
+  alias (10.0.2.2) so the app can reach the local Docker Compose stack while
+  it's still served over HTTP. Not needed once the real deploy uses HTTPS —
+  do not widen this to a blanket cleartext allowance.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

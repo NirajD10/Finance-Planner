@@ -1,0 +1,45 @@
+import { useEffect } from 'react';
+import { useAuthStore } from './store/authStore';
+import { Login } from './screens/Login';
+import { HealthCheck } from './screens/HealthCheck';
+import { SyncStatusIndicator } from './components/SyncStatusIndicator';
+import { runSync } from './lib/sync/syncEngine';
+import { setupSyncTriggers } from './lib/sync/triggers';
+
+function AuthenticatedApp({ accessToken }: { accessToken: string }) {
+  useEffect(() => {
+    void runSync(accessToken);
+    const cleanup = setupSyncTriggers(() => accessToken);
+    return cleanup;
+  }, [accessToken]);
+
+  return (
+    <>
+      <SyncStatusIndicator />
+      <button type="button" onClick={() => void runSync(accessToken)}>
+        Refresh
+      </button>
+      <HealthCheck accessToken={accessToken} />
+    </>
+  );
+}
+
+function App() {
+  const auth = useAuthStore((s) => s.auth);
+  const restoreSession = useAuthStore((s) => s.restoreSession);
+
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
+
+  return (
+    <main>
+      <h1>Finance Planner</h1>
+      {auth.status === 'loading' && <p>Loading…</p>}
+      {auth.status === 'unauthenticated' && <Login />}
+      {auth.status === 'authenticated' && <AuthenticatedApp accessToken={auth.accessToken} />}
+    </main>
+  );
+}
+
+export default App;
