@@ -12,6 +12,7 @@ import { formatPaise } from '../../lib/money';
 const PAGE_SIZE = 40;
 const UNDO_WINDOW_MS = 5000;
 const SWIPE_DELETE_THRESHOLD_PX = -72;
+const TAP_MAX_MOVEMENT_PX = 8;
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -183,27 +184,42 @@ function TransactionRow({
   onRecategorise: (categoryId: string) => void;
 }) {
   const [dragX, setDragX] = useState(0);
-  const dragging = useRef<{ startX: number; pointerId: number } | null>(null);
+  // moved tracks total horizontal travel so pointerup can tell a tap (open
+  // the editor) apart from a drag that didn't reach the delete threshold
+  // (snap back, do nothing) — a plain onClick on the row can't do this
+  // because setPointerCapture keeps the browser's synthesized click bound to
+  // the captured element regardless of where the pointer visually ends up,
+  // so a delete-swipe would otherwise also fire a click and reopen the
+  // editor for the row that was just deleted.
+  const dragging = useRef<{ startX: number; pointerId: number; moved: number } | null>(null);
 
   function onPointerDown(e: PointerEvent) {
-    dragging.current = { startX: e.clientX, pointerId: e.pointerId };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dragging.current = { startX: e.clientX, pointerId: e.pointerId, moved: 0 };
+    e.currentTarget.setPointerCapture(e.pointerId);
   }
 
   function onPointerMove(e: PointerEvent) {
     if (!dragging.current) return;
     const delta = e.clientX - dragging.current.startX;
+    dragging.current.moved = Math.abs(delta);
     setDragX(Math.min(0, delta));
   }
 
   function onPointerUp() {
-    if (!dragging.current) return;
+    const drag = dragging.current;
     dragging.current = null;
+    if (!drag) return;
     if (dragX <= SWIPE_DELETE_THRESHOLD_PX) {
       onDelete();
-    } else {
-      setDragX(0);
+      return;
     }
+    setDragX(0);
+    if (drag.moved < TAP_MAX_MOVEMENT_PX) onEdit();
+  }
+
+  function onPointerCancel() {
+    dragging.current = null;
+    setDragX(0);
   }
 
   return (
@@ -215,12 +231,22 @@ function TransactionRow({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerCancel={onPointerCancel}
       >
-        <button type="button" className="transaction-row-main" onClick={onEdit}>
+        <div
+          className="transaction-row-main"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onEdit();
+            }
+          }}
+        >
           <span className="transaction-description">{transaction.description}</span>
           <span className="transaction-date">{transaction.date}</span>
-        </button>
+        </div>
         <select
           className="recategorise-select"
           value={transaction.categoryId}

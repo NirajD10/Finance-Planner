@@ -18,7 +18,19 @@ export const loginRoute = new Elysia().use(accessJwt).post(
         return { error: 'Server auth is not configured' };
       }
 
-      const valid = await Bun.password.verify(body.password, expectedHash);
+      // Bun.password.verify throws (rather than resolving false) if
+      // expectedHash isn't a recognised hash string at all — e.g. an
+      // AUTH_PASSWORD_HASH mangled by a missing \$ escape in .env (Bun's env
+      // loader expands unescaped $-sequences). Caught here so a bad env var
+      // still degrades to a clean JSON error instead of a raw exception
+      // reaching the client (SKILL.md conventions: never leak a raw error).
+      let valid: boolean;
+      try {
+        valid = await Bun.password.verify(body.password, expectedHash);
+      } catch {
+        set.status = 500;
+        return { error: 'Server auth is not configured' };
+      }
       if (!valid) {
         set.status = 401;
         return { error: 'Invalid credentials' };
