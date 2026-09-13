@@ -11,7 +11,7 @@ Track progress by editing the status column below.
 | 0 | Oracle VM + Docker stack, HTTPS domain, health check on web and Android | 1 weekend | ☑ (local; VM/DNS steps in `deploy/README.md` still manual) |
 | 1 | Schema, seed data, auth (with rate limiting from day one) | 1 weekend | ☑ |
 | 2 | Local store, outbox, sync | 1 weekend | ☑ |
-| 3 | Transaction entry + quick-add | 1 weekend | ☐ |
+| 3 | Transaction entry + quick-add | 1 weekend | ☑ (built; needs a manual pass against a running backend — see note below) |
 | 4 | Monthly plan + dashboard | 1 weekend | ☐ |
 | 5 | Commitments + sinking fund | 4–5 days | ☐ |
 | 6 | Excel import | 1 weekend | ☐ |
@@ -143,6 +143,8 @@ This is the feature the dataset depends on. Your cash spending is currently invi
 - 500 rows scroll without lag
 
 **Watch for:** this is the screen to over-invest in. If entry is slow, nothing else matters.
+
+**Verification note:** built and typechecked/linted/built clean, and all writes go through the phase-2 outbox as required. The full "Done when" list above (two-tap quick-add offline, numeric keypad, 500-row scroll, inline recategorise) has not been exercised against a live login → sync → device flow yet, since that needs `deploy/docker-compose.yml` (or a local Postgres) running — do that pass before checking this phase off for real.
 
 > **Claude Code prompt**
 > Phase 3 from PLAN.md. Build the transaction entry form, the month-grouped transaction list with inline recategorisation and swipe-to-delete with undo, and the configurable quick-add button row from PRD section 4.1. All writes go through the outbox from phase 2. Optimise the quick-add path for two taps from cold launch.

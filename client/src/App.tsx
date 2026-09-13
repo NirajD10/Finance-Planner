@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from './store/authStore';
 import { Login } from './screens/Login';
 import { HealthCheck } from './screens/HealthCheck';
+import { TransactionsScreen } from './screens/transactions/TransactionsScreen';
 import { SyncStatusIndicator } from './components/SyncStatusIndicator';
 import { runSync } from './lib/sync/syncEngine';
 import { setupSyncTriggers } from './lib/sync/triggers';
@@ -15,11 +16,17 @@ function AuthenticatedApp({ accessToken }: { accessToken: string }) {
 
   return (
     <>
-      <SyncStatusIndicator />
-      <button type="button" onClick={() => void runSync(accessToken)}>
-        Refresh
-      </button>
-      <HealthCheck accessToken={accessToken} />
+      <div className="top-bar">
+        <SyncStatusIndicator />
+        <button type="button" onClick={() => void runSync(accessToken)}>
+          Refresh
+        </button>
+      </div>
+      <TransactionsScreen accessToken={accessToken} />
+      <details className="diagnostics">
+        <summary>Diagnostics</summary>
+        <HealthCheck accessToken={accessToken} />
+      </details>
     </>
   );
 }
