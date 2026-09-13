@@ -12,7 +12,7 @@ Track progress by editing the status column below.
 | 1 | Schema, seed data, auth (with rate limiting from day one) | 1 weekend | ☑ |
 | 2 | Local store, outbox, sync | 1 weekend | ☑ |
 | 3 | Transaction entry + quick-add | 1 weekend | ☑ (built; needs a manual pass against a running backend — see note below) |
-| 4 | Monthly plan + dashboard | 1 weekend | ☐ |
+| 4 | Monthly plan + dashboard | 1 weekend | ☑ |
 | 5 | Commitments + sinking fund | 4–5 days | ☐ |
 | 6 | Excel import | 1 weekend | ☐ |
 | 7 | Rule engine | 3–4 days | ☐ |
@@ -172,6 +172,8 @@ This is the feature the dataset depends on. Your cash spending is currently invi
 - Dashboard renders from local data with no network
 
 **Watch for:** the per-day figure is the point of the screen. "₹660 left over 11 days is ₹60/day" is actionable in a way that "₹660 left" is not.
+
+**Verification note:** `client/src/lib/queries/spending.test.ts` reconciles a hand-calculated fixture month (`bun run test`, in `client/`). Verified live against a real backend too — created a plan, confirmed the safe-to-spend hero matched a hand-calculated total exactly, exercised copy-from-last-month and the month switcher, and pushed a category through the 70%/100% thresholds to confirm colour and per-day behaviour. Design: this phase also introduced a real visual identity ("The Ledger" — sage paper, navy accent, Source Serif 4 + IBM Plex Mono, hairline-ruled rows instead of cards) applied app-wide, not just to this screen — see the commit for the full design brief. Not yet covered: an Android/Capacitor build and offline/airplane-mode device testing.
 
 > **Claude Code prompt**
 > Phase 4 from PLAN.md. Build lib/queries/spending.ts implementing SKILL.md hard rule 2, the monthly plan editor, and the dashboard from PRD section 4.5 with per-category cards showing spent, remaining, and remaining-per-day. Write a test that reconciles a fixture month against hand-calculated totals.
